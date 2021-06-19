@@ -155,7 +155,6 @@ formElement.addEventListener("submit", (e)=>{
     let validCarNumber = cardValidity();
     let validZipCode = zipValidity();
     let validCvv = cvvValidity();
-    let validActivities =activitiesValidity(numberOfSelectedActivities);
     if (payment.value == "credit-card"){
         if(validName && validEmail && totalCost!=0 && validCarNumber && validZipCode &&validCvv ){
         }
