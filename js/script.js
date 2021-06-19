@@ -18,7 +18,8 @@ let creditCardDiv = document.getElementById("credit-card")
 let paypalDiv = document.getElementById("paypal");
 let bitcoinDiv = document.getElementById("bitcoin");
 let activitiesStyle =document.querySelectorAll("input[type='checkbox']");
-let selectedActivities= [];
+let numberOfSelectedActivities =0;
+
 //the 'color' options will be disabled until the user selects the shirts design
 colorEle.disabled = true;
 nameInput.focus();
@@ -37,6 +38,7 @@ for(let i =0;i<activitiesStyle.length;i++){
         activitiesStyle[i].parentNode.classList.remove('focus');
     })
 }
+//events to call the functions that will verify in real time if the input fields are valid
 nameInput.addEventListener("input",(e)=>{
     nameValidity();
 })
@@ -49,14 +51,24 @@ zipCode.addEventListener("input",(e)=>{
 cvvNumber.addEventListener("input",(e)=>{
     cvvValidity();
 })
+emailAddress.addEventListener("input",(e)=>{
+    mailValidity();
+})
+//functions to verify if the input fields are valid
 function nameValidity(){
     let nameValue = nameInput.value;
     let nameRegEx = /^[a-zspace]+$/.test(nameValue);
-    if(!nameRegEx){
+    if(nameValue==""){
+        invalidInput(nameInput);
+        let errorMessage =nameInput.parentNode.lastElementChild;
+        errorMessage.innerHTML = "Name field cannot be blank";
+    }
+    else if(!nameRegEx){
         invalidInput(nameInput);
         let errorMessage =nameInput.parentNode.lastElementChild;
         errorMessage.innerHTML = "Name must contain only letters";
     }
+    
     else{
         validInput(nameInput);
     }
@@ -64,7 +76,14 @@ function nameValidity(){
 }
 function mailValidity(){
     let emailValue =emailAddress.value;
-    return /^[^@]+@[^@.]+\.[a-zA-Z]+$/.test(emailValue);
+    let mailRegEx =/^[^@]+@[^@.]+\.[a-zA-Z]+$/.test(emailValue);
+    if(!mailRegEx){
+        invalidInput(emailAddress);
+    }
+    else{
+        validInput(emailAddress);
+    }
+    return mailRegEx;
 }
 function cardValidity(){
     let cardNumberValue =cardNumber.value;
@@ -120,11 +139,14 @@ function cvvValidity(){
     }
     return cvvRegEx;
 }
-
-function activitiesValidity(bol){
-    console.log(bol);
+function activitiesValidity(number){
+    if (number==0){
+        invalidInput(activitiesField.children[0]);
+    }
+    else{
+        validInput(activitiesField.children[0])
+    }
 }
-
 //event that will verify if the form can be validated or not
 formElement.addEventListener("submit", (e)=>{
     //verifyng if the input fields are valid using regular expressions
@@ -133,56 +155,18 @@ formElement.addEventListener("submit", (e)=>{
     let validCarNumber = cardValidity();
     let validZipCode = zipValidity();
     let validCvv = cvvValidity();
-    let validActivities = activitiesValidity();
+    let validActivities =activitiesValidity(numberOfSelectedActivities);
     if (payment.value == "credit-card"){
         if(validName && validEmail && totalCost!=0 && validCarNumber && validZipCode &&validCvv ){
         }
         else{
             e.preventDefault();
-            //if not possible to validate the form then every not valid field will display a error message 
-            if(!validEmail){
-                invalidInput(emailAddress);
-            }
-            else{
-                validInput(emailAddress);
-            }
-            if(totalCost==0){
-                invalidInput(activitiesField.children[0]);
-            }
-            else{
-                validInput(activitiesField.children[0]);
-            }
-            if(!validZipCode){
-                invalidInput(zipCode);
-            }
-            else{
-                validInput(zipCode);
-            }
-            if(!validCvv){
-                invalidInput(cvvNumber);
-            }
-            else{
-                validInput(cvvNumber);
-            }
         }
     }
     else{
-        if(validName && validEmail && totalCost!=0 ){
-            
+        if(validName && validEmail && totalCost!=0 ){         
         }
         else{
-            if(!validEmail){
-                invalidInput(emailAddress);
-            }
-            else{
-                validInput(emailAddress);
-            }
-            if(totalCost==0){
-                invalidInput(activitiesField.children[0]);
-            }
-            else{
-                validInput(activitiesField);
-            }
             e.preventDefault();
         }
     }
@@ -223,32 +207,29 @@ payment.addEventListener("change", (e)=>{
 activitiesField.addEventListener("change", (e)=>{
     let cost = +e.target.getAttribute("data-cost");
     let activityName = e.target.getAttribute("name")
-    let activityDate = e.target.getAttribute("data-day-and-time").toString();
-    let activityError = false;
-    let matchCount = 0;
+    let activityDate = e.target.getAttribute("data-day-and-time");
     if (e.target.checked){
+        numberOfSelectedActivities++;
         totalCost += cost; 
-        selectedActivities.push(e.target);
-        for(let i = 0;i<selectedActivities.length;i++){
-            if(activityDate===selectedActivities[i].getAttribute("data-day-and-time") && activityName!==selectedActivities[i].getAttribute("name")){
-                console.log("diferent activity");
+        for(let i = 0 ; i<activitiesStyle.length ;i++){
+            if(activityName!==activitiesStyle[i].getAttribute("name") && activityDate===activitiesStyle[i].getAttribute("data-day-and-time")){
+                activitiesStyle[i].setAttribute("type","hidden");
+                activitiesStyle[i].parentNode.classList.add("disabled");
             }
         }
-        activitiesValidity(activityError);
     }
     else{
+        numberOfSelectedActivities--;
         totalCost-=cost;
-        for(let i = 0 ;i<selectedActivities.length;i++){
-            if(activityName===selectedActivities[i].getAttribute("name")){
-            selectedActivities.splice(i,1);
+        for(let i = 0 ; i<activitiesStyle.length ;i++){
+            if(activityName!==activitiesStyle[i].getAttribute("name") && activityDate===activitiesStyle[i].getAttribute("data-day-and-time")){
+                activitiesStyle[i].setAttribute("type","checkbox");
+                activitiesStyle[i].parentNode.classList.remove("disabled");
             }
-            if(selectedActivities.length>0 && !selectedActivities.includes(activityDate)){
-                activitiesValidity(true);
-        }
-        
         }
     }
     totalCostParagraph.innerHTML = `Total ${totalCost}€`;
+    activitiesValidity(numberOfSelectedActivities);
 })
 //display or hide the 'other job' form field
 jobRole.addEventListener("change", (e)=>{
