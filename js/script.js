@@ -246,6 +246,7 @@ designEle.firstElementChild.hidden = false;
 designEle.addEventListener("change", (e)=>{
 let target = e.target.value;
 
+
     //loop through the options for shirt theme
     for(let j= 0; j<designEle.length;j++){
         //Selects one option and semove selection from the others
