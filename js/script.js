@@ -8,8 +8,8 @@ let formElement = document.querySelector("form");
 let jobRole = document.getElementById("title") ;
 let other_job_role = document.getElementById("other-job-role");
 let designEle = document.getElementById("design");
-let colorEle = document.getElementById("color");
-let colorOptions = colorEle.children;
+const colorEle = document.getElementById("color");
+const colorOptions = colorEle.children;
 let activitiesField= document.getElementById("activities");
 let totalCostParagraph= document.getElementById("activities-cost");
 let totalCost = 0;
@@ -28,7 +28,9 @@ other_job_role.style.display = "none";
 //the page will load with the payment option 'credit card as active choice
 paypalDiv.style.display = "none";
 bitcoinDiv.style.display = "none";
+//makes the credit card option the selected option when the page loads
 payment.children[1].setAttribute("selected",true);
+payment.removeChild(payment.firstElementChild);
 //loop to give focus or not to the activities
 for(let i =0;i<activitiesStyle.length;i++){
     activitiesStyle[i].addEventListener('focus',(e)=>{
@@ -57,20 +59,16 @@ emailAddress.addEventListener("input",(e)=>{
 //functions to verify if the input fields are valid
 function nameValidity(){
     let nameValue = nameInput.value;
-    let nameRegEx = /^[a-zspace]+$/.test(nameValue);
+    let nameRegEx = false;
     if(nameValue==""){
         invalidInput(nameInput);
         let errorMessage =nameInput.parentNode.lastElementChild;
         errorMessage.innerHTML = "Name field cannot be blank";
+        nameRegEx =false;
     }
-    else if(!nameRegEx){
-        invalidInput(nameInput);
-        let errorMessage =nameInput.parentNode.lastElementChild;
-        errorMessage.innerHTML = "Name must contain only letters";
-    }
-    
     else{
         validInput(nameInput);
+        nameRegEx = true;
     }
     return nameRegEx;
 }
@@ -160,6 +158,9 @@ formElement.addEventListener("submit", (e)=>{
         }
         else{
             e.preventDefault();
+            if(totalCost==0){
+                invalidInput(activitiesField.children[0]);
+            }
         }
     }
     else{
@@ -240,21 +241,64 @@ jobRole.addEventListener("change", (e)=>{
     }
 
 })
+designEle.firstElementChild.hidden = false;
 //when the user selects a shirt Theme the possible colors associated with that Theme will be available to be choosen
 designEle.addEventListener("change", (e)=>{
-    colorEle.disabled= false; 
-    for(let i=0;i<colorOptions.length;i++){
-        let target = e.target.value;
+let target = e.target.value;
+
+    //loop through the options for shirt theme
+    for(let j= 0; j<designEle.length;j++){
+        //Selects one option and semove selection from the others
+        if (target === designEle[j].value){
+            designEle[j].setAttribute("selected",true);
+            //if the user choose the "Select Theme" option the color drop down field becomes disabled again
+            //and is asked to the user to select a theme
+            if (j==0){
+                colorEle.children[0].hidden= false;
+                colorEle.children[0].setAttribute("selected",true);
+                for(let i=1;i<colorEle.children.length;i++){
+                    colorEle.children[i].removeAttribute("selected");
+                }
+                colorEle.disabled= true; 
+            }
+            else{
+                colorEle.disabled= false; 
+                colorEle.children[0].hidden= true;
+                colorEle.children[0].removeAttribute("selected");
+            }
+        }
+        else{
+            designEle[j].removeAttribute("selected");
+
+        }
+    }
+    //loop through the color options to select the make only thte options that match the theme available to the user
+    for(let i=1;i<colorEle.children.length;i++){
+
         let data_theme = colorEle.children[i].getAttribute('data-theme');
         if (target == data_theme){
+            
             colorEle.children[i].hidden =false;
             colorEle.children[i].setAttribute("selected",true);
+           
+
         }
         else{
             colorEle.children[i].hidden =true;
             colorEle.children[i].removeAttribute("selected");
         }
 
+    }
+})
+//when a color is choosen it becomes the "selected" option all others became not "selected"
+colorEle.addEventListener("change", (e)=>{
+    for(let i=1;i<colorEle.children.length;i++){
+        if (e.target.value == colorEle.children[i].value){
+            colorEle.children[i].setAttribute("selected",true);
+        }
+        else{
+            colorEle.children[i].removeAttribute("selected");
+        }
     }
 })
 
