@@ -14,7 +14,7 @@ let activitiesField= document.getElementById("activities");
 let totalCostParagraph= document.getElementById("activities-cost");
 let totalCost = 0;
 let payment = document.getElementById("payment");
-let creditCardDiv = document.getElementById("credit-card")
+let creditCardDiv = document.getElementById("credit-card");
 let paypalDiv = document.getElementById("paypal");
 let bitcoinDiv = document.getElementById("bitcoin");
 let activitiesStyle =document.querySelectorAll("input[type='checkbox']");
@@ -206,7 +206,7 @@ payment.addEventListener("change", (e)=>{
 //update the total price when activities are choosen 
 activitiesField.addEventListener("change", (e)=>{
     let cost = +e.target.getAttribute("data-cost");
-    let activityName = e.target.getAttribute("name")
+    let activityName = e.target.getAttribute("name");
     let activityDate = e.target.getAttribute("data-day-and-time");
     if (e.target.checked){
         numberOfSelectedActivities++;
@@ -241,65 +241,77 @@ jobRole.addEventListener("change", (e)=>{
     }
 
 })
+//create an array with all the color options to be used on the next event
+let colorText = [];
+for(let j = 0;j<colorOptions.length;j++){
+    colorText.push(colorOptions[j]);
+}
 designEle.firstElementChild.hidden = false;
 //when the user selects a shirt Theme the possible colors associated with that Theme will be available to be choosen
 designEle.addEventListener("change", (e)=>{
-let target = e.target.value;
+    let target = e.target.value;
+    //reset the content of the color select and then insert all the options
+    colorEle.innerHTML= '';
+    for(let j = 0; j<colorText.length ; j++){
+        colorEle.appendChild(colorText[j]);
+    }
+        //loop through the options for shirt theme
+        for(let j= 0; j<designEle.length;j++){
+            //Selects one option and semove selection from the others
+            if (target === designEle[j].value){
+                designEle[j].setAttribute("selected",true);
+                //if the user choose the "Select Theme" option the color drop down field becomes disabled again
+                //and is asked to the user to select a theme
+                if (j==0){
+                    colorEle.insertBefore(colorText[0],colorEle.firstElementChild)
+                    colorEle.children[0].hidden= false;
+                    colorEle.children[0].setAttribute("selected",true);
+                    for(let i=1;i<colorEle.children.length;i++){
+                        colorEle.children[i].removeAttribute("selected");
+                    }
+                    colorEle.disabled= true; 
 
-
-    //loop through the options for shirt theme
-    for(let j= 0; j<designEle.length;j++){
-        //Selects one option and semove selection from the others
-        if (target === designEle[j].value){
-            designEle[j].setAttribute("selected",true);
-            //if the user choose the "Select Theme" option the color drop down field becomes disabled again
-            //and is asked to the user to select a theme
-            if (j==0){
-                colorEle.children[0].hidden= false;
-                colorEle.children[0].setAttribute("selected",true);
-                for(let i=1;i<colorEle.children.length;i++){
-                    colorEle.children[i].removeAttribute("selected");
                 }
-                colorEle.disabled= true; 
+                else{
+                    colorEle.disabled= false; 
+                    colorEle.children[0].hidden= true;
+                    colorEle.children[0].removeAttribute("selected");
+                     //loop through the color options to select the make only thte options that match the theme available to the user
+                    for(let i=0;i<colorEle.children.length;i++){
+
+                        let data_theme = colorEle.children[i].getAttribute('data-theme');
+                        if (target == data_theme){
+                            colorEle.children[i].hidden =false;
+                            colorEle.children[i].setAttribute("selected",true);
+                        }
+                        else{
+                            colorEle.children[i].hidden =true;
+                            colorEle.children[i].removeAttribute("selected");
+                            //there was a bug when using the browser Safari , the 2 lines above for some reason 
+                            //where not working and i had to find this solution to make it work
+                            colorEle.removeChild(colorEle.children[i]);
+                            i--;
+                        }
+                
+                    }
+                }
             }
             else{
-                colorEle.disabled= false; 
-                colorEle.children[0].hidden= true;
-                colorEle.children[0].removeAttribute("selected");
+                designEle[j].removeAttribute("selected");
+
             }
         }
-        else{
-            designEle[j].removeAttribute("selected");
-
+        
+    })
+    //when a color is choosen it becomes the "selected" option all others became not "selected"
+    colorEle.addEventListener("change", (e)=>{
+        for(let i=1;i<colorEle.children.length;i++){
+            if (e.target.value == colorEle.children[i].value){
+                colorEle.children[i].setAttribute("selected",true);
+            }
+            else{
+                colorEle.children[i].removeAttribute("selected");
+            }
         }
-    }
-    //loop through the color options to select the make only thte options that match the theme available to the user
-    for(let i=1;i<colorEle.children.length;i++){
-
-        let data_theme = colorEle.children[i].getAttribute('data-theme');
-        if (target == data_theme){
-            
-            colorEle.children[i].hidden =false;
-            colorEle.children[i].setAttribute("selected",true);
-           
-
-        }
-        else{
-            colorEle.children[i].hidden =true;
-            colorEle.children[i].removeAttribute("selected");
-        }
-
-    }
-})
-//when a color is choosen it becomes the "selected" option all others became not "selected"
-colorEle.addEventListener("change", (e)=>{
-    for(let i=1;i<colorEle.children.length;i++){
-        if (e.target.value == colorEle.children[i].value){
-            colorEle.children[i].setAttribute("selected",true);
-        }
-        else{
-            colorEle.children[i].removeAttribute("selected");
-        }
-    }
 })
 
